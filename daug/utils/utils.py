@@ -11,6 +11,7 @@ def transform_image(X, M):
     return cv2.warpAffine(X, M[:2, :], dsize, flags=cv2.WARP_INVERSE_MAP)
 
 
+# TODO: this should actually take a list of transforms, one for each example
 def transform_minibatch(X, **kwargs):
     Xtr = np.empty(X.shape, dtype=X.dtype)  # copy to avoid accumulating errors
     # TODO: there is certainly a better way to handle different
