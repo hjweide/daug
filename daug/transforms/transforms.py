@@ -11,10 +11,12 @@ def build_stretch_matrix(x, y):
 
 
 def build_shear_matrix(x, y):
+    tan_x = np.tan(x)
+    tan_y = np.tan(y)
     shear_transform = np.array(
-        [[1, x, 0],
-         [y, 1, 0],
-         [0, 0, 1]],
+        [[1,     tan_x, 0],
+         [tan_y, 1,     0],
+         [0,     0,     1]],
         dtype=np.float32)
     return shear_transform
 
@@ -65,10 +67,21 @@ def build_translate_matrix(x, y):
 
 
 def build_transformation_matrix(
-        imsize, theta=0., offset=(0., 0.), flip=(False, False),
-        shear=(0., 0.), stretch=(1.0, 1.0)):
+        imsize, theta=None, offset=None, flip=None, shear=None, stretch=None):
 
-    cx, cy = np.array(imsize) / 2
+    # use the identity matrix as default
+    if theta is None:
+        theta = 0.
+    if offset is None:
+        offset = (0., 0.)
+    if flip is None:
+        flip = (False, False)
+    if shear is None:
+        shear = (0., 0.)
+    if stretch is None:
+        stretch = (1., 1.)
+
+    cx, cy = np.array(imsize) / 2 - 0.5
     center_matrix = build_translate_matrix(cx, cy)
     stretch_matrix = build_stretch_matrix(*stretch)
     shear_matrix = build_shear_matrix(*shear)

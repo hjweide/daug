@@ -1,9 +1,10 @@
 import sys
 from daug.utils import transform_minibatch
+from daug.utils import generate_transformations
 import cv2
 import numpy as np
 
-from os import listdir
+from os import listdir, mkdir
 from os.path import join, isdir, isfile
 
 
@@ -57,13 +58,28 @@ def load_other(datadir, imsize):
     return X
 
 
-def main(example, imsize=None):
+def main(example, imsize=None, minibatch_dir='minibatches'):
     if example == 'mnist':
         X = load_mnist()
     elif example == 'cifar10':
         X = load_cifar10()
     else:
         X = load_other(example, imsize)
+
+    if not isdir(minibatch_dir):
+        mkdir(minibatch_dir)
+
+    # specify the allowed range as (min, max) for each parameter
+    daug_params = {
+        'rotation': (-np.pi / 6, np.pi / 6),    # radians
+        'offset':   (-2, 2),                    # pixels
+        'flip':     (0.5, 0.5),                 # probabilities
+        'shear':    (-np.pi / 9., np.pi / 9.),  # radians
+        'stretch':  (1 / 1.3, 1.3),             # scale factor
+    }
+
+    # for an example of realistic parameters, see the winners of Kaggle NDSB:
+    # http://benanne.github.io/2015/03/17/plankton.html#prepro-augmentation
 
     bs = 8  # number of images to show at a time
     num_batches = (X.shape[0] + bs - 1) / bs
@@ -72,21 +88,24 @@ def main(example, imsize=None):
         idx = slice(i * bs, (i + 1) * bs)
         Xb = X[idx]
 
-        # this is the relevant part
-        Xbt = transform_minibatch(
-            Xb,
-            offset=(0., 0.), theta=np.pi / 4,
-            flip=(True, True),
-            shear=(0.0, 0.0), stretch=(1.0, 1.0),
+        # this is the relevant part:
+        # 1) generate random transformations based on the allowed ranges
+        Mb = generate_transformations(
+            Xb.shape[0],
+            Xb.shape[2:4],
+            **daug_params
         )
+        # 2) apply the generated transformations to the minibatch
+        Xbt = transform_minibatch(Xb, Mb)
 
         # this is just for visualization
         original = np.hstack(np.squeeze(Xb.transpose(0, 2, 3, 1)))
         transformed = np.hstack(np.squeeze(Xbt.transpose(0, 2, 3, 1)))
         img = np.vstack((original, transformed))
         img = (img * 255.).astype(np.uint8)
-        cv2.imshow('minibatch', img)
-        cv2.waitKey(0)
+
+        # to write to disk
+        cv2.imwrite(join(minibatch_dir, 'minibatch_%d.png' % i), img)
 
 
 if __name__ == '__main__':
