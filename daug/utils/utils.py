@@ -64,7 +64,7 @@ def transform_image(X, M):
     assert M.shape == (3, 3), 'expected (3, 3) matrix, got %r' % (M.shape,)
     assert X.dtype == np.float32, 'expected dtype float32, got %r' % (X.dtype)
     dsize = X.shape[:2][::-1]  # get (h, w), flip them for OpenCV
-    #return cv2.warpAffine(X, M[:2, :], dsize, flags=cv2.WARP_INVERSE_MAP)
+
     return cv2.warpAffine(X, M[:2, :], dsize)
 
 
@@ -74,7 +74,6 @@ def transform_minibatch(X, M):
             X.shape[0], M.shape[0]))
 
     Xtr = np.empty(X.shape, dtype=X.dtype)  # copy to avoid accumulating errors
-    # number of channels
     for i in range(X.shape[0]):
         if X[i].shape[0] == 1:
             Xtr[i, 0] = transform_image(X[i, 0], M[i])
