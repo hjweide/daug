@@ -9,7 +9,7 @@ def generate_transformations(samples, imsize,
                              flip=None, shear=None, stretch=None):
     if rotation is not None:
         theta_min, theta_max = rotation
-        rotations = 2 * theta_max * np.random.random(size=samples) - theta_min
+        rotations = 2 * theta_max * np.random.random(size=samples) + theta_min
     else:
         rotations = [None] * samples
 
