@@ -42,10 +42,10 @@ def generate_transformations(samples, imsize,
 
     if stretch is not None:
         stretch_min, stretch_max = stretch
-        log_dist = (np.log(stretch_max) + (np.log(stretch_min) - np.log(
-            stretch_min)) * np.random.random(
-                size=(2 * samples)).reshape(samples, 2))
-        stretches = np.e ** log_dist
+        log_dist = (
+            np.log(stretch_max) - np.log(stretch_min)
+        ) * np.random.random(size=(2 * samples)).reshape(samples, 2)
+        stretches = np.e ** (log_dist + np.log(stretch_min))
     else:
         stretches = [None] * samples
 
